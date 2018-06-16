@@ -1,0 +1,23 @@
+﻿<Window x:Class="VhR.SimpleGrblGui.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Grbl settings" Height="750" Width="500" WindowStyle="ToolWindow">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <DataGrid Grid.Row="0" Name="DataGrid"  AutoGenerateColumns="False" ItemsSource="{Binding Settings}"  >
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" CanUserSort="False"  IsReadOnly="True" />
+                <DataGridTextColumn Header="Setting" Binding="{Binding Description}" CanUserSort="False"  IsReadOnly="True" />
+                <DataGridTextColumn Header="Value" Binding="{Binding Content}" CanUserSort="False" />
+            </DataGrid.Columns>
+        </DataGrid>
+                
+    </Grid>
+</Window>

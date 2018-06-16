@@ -1,0 +1,69 @@
+﻿<Window   xmlns:Usercontrols="clr-namespace:VhR.SimpleGrblGui.Usercontrols" x:Class="VhR.SimpleGrblGui.Main"
+          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          mc:Ignorable="d"
+          Title="VhR CNC" >
+
+
+    <Grid Name="Maingrid" Margin="10" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" x:Name="MenuRow"></RowDefinition>
+            <RowDefinition x:Name="ContentRow"></RowDefinition>
+            <RowDefinition Height="auto" Name="MessageboxRow"></RowDefinition>
+            <RowDefinition Height="Auto" Name="StatusBarRow"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0" IsMainMenu="True">
+            <MenuItem  Header="_File">
+                <MenuItem x:Name="Menu_open" Header="Open" Click="Menu_open_Click" ></MenuItem>
+
+                
+            </MenuItem>
+            <MenuItem x:Name="Menu_Settings" 
+                      Header="_Settings" 
+                      Click="Menu_Settings_Click"
+                      IsEnabled="{Binding SettingsMenuEnabled}"></MenuItem>
+            <MenuItem x:Name="Menu_Camera" 
+                      Header="_Camera" 
+                      Click="Menu_Camera_Click"
+                      ></MenuItem>
+        </Menu>
+
+        <Usercontrols:DrawingControl Grid.Row="1" />
+
+        <Grid Grid.Row="1" Name="ContentGrid" Panel.ZIndex="2">
+                <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <Usercontrols:GcodeControl Grid.Column="0" 
+                                             Margin="0 0 2 0"                    
+                                            VerticalAlignment="Top"
+                                                
+                                                Background="Transparent"
+                                                >
+            </Usercontrols:GcodeControl>
+
+
+
+            <Usercontrols:CoordinatesControl Grid.Column="2" 
+                                            Margin="0 0 2 0"                    
+                                            VerticalAlignment="Top"
+                                            Background="Transparent"
+                                            Panel.ZIndex="2">
+            </Usercontrols:CoordinatesControl>
+        </Grid>
+
+
+        <Usercontrols:MessageControl Grid.Row="2"></Usercontrols:MessageControl>
+        <Usercontrols:StateControl Grid.Row="3"></Usercontrols:StateControl>
+
+    </Grid>
+
+
+
+</Window>

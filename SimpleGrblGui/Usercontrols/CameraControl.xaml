@@ -1,0 +1,24 @@
+﻿<UserControl x:Class="VhR.SimpleGrblGui.Usercontrols.CameraControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:VhR.SimpleGrblGui.Usercontrols"
+             >
+    <Grid >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" ></RowDefinition>
+            <RowDefinition Height="*" ></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <local:ColorPickerControl  x:Name="ColorCombo" 
+                                   Grid.Row="0" 
+                                   SelectedColor="Red" 
+                                   Width="100"
+                                   Height="15"
+                                   FontSize="8"
+                                   HorizontalAlignment="Right" />
+        <Grid x:Name="ImageGrid" Grid.Row="1" Unloaded="ImageGrid_Unloaded" Loaded="ImageGrid_Loaded">
+           
+        </Grid>
+        
+    </Grid>
+</UserControl>
