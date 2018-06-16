@@ -1,5 +1,5 @@
 # SimpleGrblgui
-A basic gui for Grbl v1.1f. Written in C# for .Net 4.5
+A basic gui for Grbl v1.1f. Libraries are written in C# for .Net 4.5. and gui is based on WPF. 
 
 This desktop app is only to be used by people who wants a very basic gui for controlling GRBL from a Windows OS. 
 
