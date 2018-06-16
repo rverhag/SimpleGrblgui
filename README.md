@@ -5,7 +5,7 @@ This interface is only to be used by people who wants a very basic gui for contr
 
 No fancy screens, menus, buttons or whatsoever. Just plug in and go..... almost
 
-To get started you'll need grbl v1.1f(2017-08-01) flashed on an Arduino and Visual studio 2017 to get things compiled (or use the exe,  Found here https://github.com/rverhag/SimpleGrblgui/tree/master/SimpleGrblGui/bin/Release , at your own risk)
+To get started you'll need grbl v1.1f(2017-08-01) flashed on an Arduino and Visual studio 2017 to get things compiled (or use the exe,  found here https://github.com/rverhag/SimpleGrblgui/tree/master/SimpleGrblGui/bin/Release , at your own risk)
 
 
 Thanks to all the people who has provided insights, sourcecode, tips and tricks during development.
