@@ -10,7 +10,7 @@ No fancy screens, menus, buttons or whatsoever. Just plug in and go..... almost
 To get started you'll need grbl v1.1f(2017-08-01) flashed on an Arduino and Visual studio 2017 to get things compiled.
 Maybe you'll need to tweak the configfile a bit and change the comport to the right one.
 
-
+Most of the code is my own, but some of it came from examples and other projects i found. In case of copied code, there should be a reference to the source.
 
 Thanks to all the people who has provided insights, sourcecode, tips and tricks during development.
 
