@@ -3,6 +3,8 @@ A very basic gui for Grbl v1.1f. Written in C# for .Net 4.5
 
 This interface is only to be used by people who wants a very basic gui for controlling GRBL from a Windows OS.
 
+![](https://github.com/rverhag/SimpleGrblgui/blob/master/WikiImages/Butterfly.jpg)
+
 No fancy screens, menus, buttons or whatsoever. Just plug in and go..... almost
 
 To get started you'll need grbl v1.1f(2017-08-01) flashed on an Arduino and Visual studio 2017 to get things compiled (or use the exe,  found here https://github.com/rverhag/SimpleGrblgui/tree/master/SimpleGrblGui/bin/Release , at your own risk)
