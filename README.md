@@ -21,5 +21,5 @@ And thanks to everybody involved in the Helixtoolkit project
 https://github.com/helix-toolkit
 for making it possible to create a 3D representation from the gcode.
 
-Special thanks to Sonny Jeon (chamnit) for all his Grbl-work https://github.com/gnea/grbl. Without his work, this gui had no meaning
+Special thanks to Sonny Jeon (chamnit) for all his Grbl-work https://github.com/gnea/grbl. Without his work, this gui had no meaning at all.
 
