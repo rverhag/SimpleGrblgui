@@ -1,7 +1,7 @@
 # SimpleGrblgui
-A very basic gui for Grbl v1.1f. Written in C# for .Net 4.5
+A basic gui for Grbl v1.1f. Written in C# for .Net 4.5
 
-This interface is only to be used by people who wants a very basic gui for controlling GRBL from a Windows OS.
+This desktop app is only to be used by people who wants a very basic gui for controlling GRBL from a Windows OS. 
 
 ![](https://github.com/rverhag/SimpleGrblgui/blob/master/WikiImages/Butterfly.jpg)
 
