@@ -7,8 +7,7 @@ This desktop app is only to be used by people who wants a very basic gui for con
 
 No fancy screens, menus, buttons or whatsoever. Just plug in and go..... almost
 
-To get started you'll need grbl v1.1f(2017-08-01) flashed on an Arduino and Visual studio 2017 to get things compiled (or use the exe,  found here https://github.com/rverhag/SimpleGrblgui/tree/master/SimpleGrblGui/bin/Release , at your own risk)
-
+To get started you'll need grbl v1.1f(2017-08-01) flashed on an Arduino and Visual studio 2017 to get things compiled.
 Maybe you'll need to tweak the configfile a bit and change the comport to the right one.
 
 
@@ -24,4 +23,3 @@ https://github.com/helix-toolkit
 for making it possible to create a 3D representation from the gcode.
 
 Special thanks to Sonny Jeon (chamnit) for all his Grbl-work https://github.com/gnea/grbl. Without his work, this gui had no meaning at all.
-
