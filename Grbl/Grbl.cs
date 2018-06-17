@@ -226,7 +226,6 @@ namespace Vhr
                 gcodeline.IsProcessed = true;
 
                 queuesize -= gcodeline.GrblCommand.Length;
-                //gcodeline.Response = string.Format("{0} ({1})", _iserror ? Error.Codes[_data.Split(':')[1]] : _data, gcodeline.Index);
                 gcodeline.Response = _iserror ? Error.Codes[_data.Split(':')[1]] : _data;
                 GcodeLineChanged?.Invoke(gcodeline, new EventArgs());
 
@@ -245,8 +244,6 @@ namespace Vhr
                 {
                     ErrorReceived?.Invoke(this, new ErrorReceivedEventArgs(Error.Codes[_data.Split(':')[1]]));
                 }
-
-                // FeedbackMessage= string.Format("{0}", _iserror ? Error.Codes[_data.Split(':')[1]] : _data);
             }
 
             GetStatus();
