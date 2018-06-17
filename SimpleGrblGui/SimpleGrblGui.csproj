@@ -164,9 +164,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Tempcode.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="cnc-machine.ico" />
   </ItemGroup>
   <ItemGroup>
