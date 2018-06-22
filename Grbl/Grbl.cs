@@ -157,10 +157,10 @@ namespace Vhr
             switch (firstletter)
             {
                 case 'O'://ok
-                    ProcessResponseAsync(data);
+                    ProcessResponse(data);
                     break;
                 case 'E'://it's an error, but still a response 
-                    ProcessResponseAsync(data, true);
+                    ProcessResponse(data, true);
                     break;
                 case '<': //It's a statusreport
                     {
@@ -217,7 +217,7 @@ namespace Vhr
         #endregion
 
         #region Response
-        private async Task ProcessResponseAsync(string _data, bool _iserror = false)
+        private void ProcessResponse(string _data, bool _iserror = false)
         {
             if (GcodeIsRunning & (nextindexforbuffer < Gcode?.Count))
             {
@@ -230,8 +230,6 @@ namespace Vhr
                 GcodeLineChanged?.Invoke(gcodeline, new EventArgs());
 
                 ++nextindexforbuffer;
-
-                await Task.Run(() => ProcessNextGcode());
             }
             else
             {
@@ -276,6 +274,7 @@ namespace Vhr
         public void StopProcessingGcode()
         {
             GcodeIsRunning = false;
+            queuesize = 0;
         }
 
         public async Task StartProcessingGcodeAsync()
@@ -284,29 +283,30 @@ namespace Vhr
             {
                 rx_buffer_size = Convert.ToInt16(ConfigurationManager.AppSettings["CommandBufferCapacity"]);
                 Gcode.Reset();
-                GcodeIsRunning = true;
-                nextindexforbuffer = 0;
-                queuesize = 0;
 
-                await Task.Run(() => ProcessNextGcode());
+                await Task.Run(() => ProcessGcode());
             }
         }
 
-        private void ProcessNextGcode()
+        private void ProcessGcode()
         {
-            var takeabreak = !InIdleState & !InCheckState & !InRunState;
+            GcodeIsRunning = true;
+            nextindexforbuffer = 0;
+            queuesize = 0;
 
-            GcodeLine gcodeline = Gcode.Where(x => !x.IsProcessed & !x.InSerialBuffer).FirstOrDefault();
-            
-            while (gcodeline!=null && !takeabreak && (GcodeIsRunning & ((rx_buffer_size - queuesize) >= gcodeline.GrblCommand.Length)))
+            foreach (GcodeLine gcodeline in Gcode)
             {
-                gcodeline.InSerialBuffer = true;
-                gcodeline.Response = "Buffered";
-                queuesize += gcodeline.GrblCommand.Length;
-                serialport.Write(Command.Gcode(gcodeline.GrblCommand).ToString());
-                GcodeLineChanged?.Invoke(gcodeline, new EventArgs());
+                while (GcodeIsRunning & ((rx_buffer_size - queuesize) < gcodeline.GrblCommand.Length)) ;
 
-                gcodeline = Gcode.Where(x => !x.IsProcessed & !x.InSerialBuffer).FirstOrDefault();
+                if (GcodeIsRunning)
+                {
+                    gcodeline.InSerialBuffer = true;
+                    gcodeline.Response = "Buffered";
+                    queuesize = Gcode.Where(x => x.InSerialBuffer).Sum(x => x.GrblCommand.Length);
+                    serialport.Write(Command.Gcode(gcodeline.GrblCommand).ToString());
+
+                    GcodeLineChanged?.Invoke(gcodeline, new EventArgs());
+                }
             }
         }
     
@@ -734,7 +734,7 @@ namespace Vhr
         {
             if (InHoldState | InDoorState) serialport.Write(Command.StartCycle.ToString());
 
-            if (GcodeIsRunning) await Task.Run(() => ProcessNextGcode());
+            if (GcodeIsRunning) await Task.Run(() => ProcessGcode());
         }
 
         public void HoldFeed()
