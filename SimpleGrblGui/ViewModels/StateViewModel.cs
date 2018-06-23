@@ -18,6 +18,12 @@ namespace VhR.SimpleGrblGui.ViewModels
             grbl = Grbl.Interface;
             grbl.StateChanged +=  Grbl_StateChanged;
             grbl.GcodeChanged += Grbl_GcodeChanged;
+            grbl.GcodeLineChanged += Grbl_GcodeLineChanged;
+        }
+
+        private void Grbl_GcodeLineChanged(object sender, System.EventArgs e)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("QueuedSize"));
         }
 
         private void Grbl_GcodeChanged(object sender, System.EventArgs e)
@@ -146,7 +152,8 @@ namespace VhR.SimpleGrblGui.ViewModels
         }
         public GrblState State { get { return grbl.State; } }
         public string StateMessage { get { return grbl.StateMessage; } }
-
+        public int QueuedSize { get { return grbl.QueuedSize; } }
+        
         public SolidColorBrush Background
         {
             get

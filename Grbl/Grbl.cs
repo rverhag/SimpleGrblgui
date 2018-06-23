@@ -157,18 +157,18 @@ namespace Vhr
             switch (firstletter)
             {
                 case 'O'://ok
-                    ProcessResponse(data);
+                    ProcessResponseAsync(data);
                     break;
                 case 'E'://it's an error, but still a response 
-                    ProcessResponse(data, true);
+                    ProcessResponseAsync(data, true);
                     break;
                 case '<': //It's a statusreport
                     {
-                        string[] fields = data.ToUpper().Substring(1, data.IndexOf(">") - 1).Split('|');
-                        ProcessState(fields[0]); //Fields[0] is allways the state
+                        string[] fields = data.IndexOf(">") > -1 ? data.ToUpper().Substring(1, data.IndexOf(">") - 1).Split('|') : null;
+                        if (fields!=null) ProcessState(fields[0]); //Fields[0] is the state
 
                         //are there more fields?
-                        if (fields.Length > 1)
+                        if (fields?.Length > 1)
                         {
                             for (int i = fields.Length - 1; i > 0; i--)
                             {
@@ -217,19 +217,22 @@ namespace Vhr
         #endregion
 
         #region Response
-        private void ProcessResponse(string _data, bool _iserror = false)
+
+        private async Task ProcessResponseAsync(string _data, bool _iserror = false)
         {
             if (GcodeIsRunning & (nextindexforbuffer < Gcode?.Count))
             {
                 GcodeLine gcodeline = Gcode.Where(x => x.Index == nextindexforbuffer).First();
                 gcodeline.InSerialBuffer = false;
                 gcodeline.IsProcessed = true;
+                QueuedSize -= gcodeline.SerialBufferLength;
 
-                queuesize -= gcodeline.GrblCommand.Length;
                 gcodeline.Response = _iserror ? Error.Codes[_data.Split(':')[1]] : _data;
                 GcodeLineChanged?.Invoke(gcodeline, new EventArgs());
 
                 ++nextindexforbuffer;
+
+                await Task.Run(() => ProcessNextGcode());
             }
             else
             {
@@ -246,6 +249,7 @@ namespace Vhr
 
             GetStatus();
         }
+
         #endregion
 
         #region Gcode processing
@@ -267,14 +271,15 @@ namespace Vhr
         }
 
         public bool GcodeIsRunning { get; set; } = false;
-        private int queuesize = 0;
-        private int rx_buffer_size = 128;
+        public int QueuedSize { get; set; } = 0;
+
+        private int rx_buffer_size = 100;
         private int nextindexforbuffer = 0;
 
         public void StopProcessingGcode()
         {
             GcodeIsRunning = false;
-            queuesize = 0;
+            QueuedSize = 0;
         }
 
         public async Task StartProcessingGcodeAsync()
@@ -283,33 +288,33 @@ namespace Vhr
             {
                 rx_buffer_size = Convert.ToInt16(ConfigurationManager.AppSettings["CommandBufferCapacity"]);
                 Gcode.Reset();
+                GcodeIsRunning = true;
+                nextindexforbuffer = 0;
+                QueuedSize = 0;
 
-                await Task.Run(() => ProcessGcode());
+                await Task.Run(() => ProcessNextGcode());
             }
         }
 
-        private void ProcessGcode()
+        private void ProcessNextGcode()
         {
-            GcodeIsRunning = true;
-            nextindexforbuffer = 0;
-            queuesize = 0;
+            var takeabreak = !InIdleState & !InCheckState & !InRunState;
 
-            foreach (GcodeLine gcodeline in Gcode)
-            {
-                while (GcodeIsRunning & ((rx_buffer_size - queuesize) < gcodeline.GrblCommand.Length)) ;
+            GcodeLine gcodeline = Gcode.Where(x => !x.IsProcessed & !x.InSerialBuffer).FirstOrDefault();
 
-                if (GcodeIsRunning)
+            while (gcodeline != null && !takeabreak && (GcodeIsRunning & ((rx_buffer_size - QueuedSize) >= gcodeline.SerialBufferLength)))
                 {
-                    gcodeline.InSerialBuffer = true;
-                    gcodeline.Response = "Buffered";
-                    queuesize = Gcode.Where(x => x.InSerialBuffer).Sum(x => x.GrblCommand.Length);
-                    serialport.Write(Command.Gcode(gcodeline.GrblCommand).ToString());
+                gcodeline.InSerialBuffer = true;
+                gcodeline.Response = "Buffered";
+                QueuedSize += gcodeline.SerialBufferLength;
 
-                    GcodeLineChanged?.Invoke(gcodeline, new EventArgs());
-                }
+                serialport.Write(Command.AddReturn(gcodeline.GrblCommand).ToString());
+
+                GcodeLineChanged?.Invoke(gcodeline, new EventArgs());
+                gcodeline = Gcode.Where(x => !x.IsProcessed & !x.InSerialBuffer).FirstOrDefault();
             }
         }
-    
+
 
         #endregion
 
@@ -686,7 +691,8 @@ namespace Vhr
 
         public void SendCommand(string _command)
         {
-            serialport.Write(Command.Gcode(_command).ToString());
+            serialport.Write(Command.AddReturn(_command).ToString());
+           
 
            // Debug.WriteLine(_command);
         }
@@ -734,7 +740,7 @@ namespace Vhr
         {
             if (InHoldState | InDoorState) serialport.Write(Command.StartCycle.ToString());
 
-            if (GcodeIsRunning) await Task.Run(() => ProcessGcode());
+            if (GcodeIsRunning) await Task.Run(() => ProcessNextGcode());
         }
 
         public void HoldFeed()
@@ -928,7 +934,7 @@ namespace Vhr
 
         public void SetXWorkToZero()
         {
-            serialport.Write(Command.Gcode(string.Format("G10 L2 P{0} X{1}\r", WorkCoordinates.Current.Index, MPOS.X)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} X{1}\r", WorkCoordinates.Current.Index, MPOS.X)).ToString());
             GetGcodeParameters();
         }
 
@@ -936,33 +942,33 @@ namespace Vhr
         {
             double correctionx= Convert.ToDouble(ConfigurationManager.AppSettings["CorrectionX"]);
 
-            serialport.Write(Command.Gcode(string.Format("G10 L2 P{0} X{1}\r", WorkCoordinates.Current.Index, MPOS.X+ correctionx)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} X{1}", WorkCoordinates.Current.Index, MPOS.X+ correctionx)).ToString());
             GetGcodeParameters();
         }
 
         public void SetYWorkToZero()
         {
-            serialport.Write(Command.Gcode(string.Format("G10 L2 P{0} Y{1}\r", WorkCoordinates.Current.Index, MPOS.Y)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} Y{1}", WorkCoordinates.Current.Index, MPOS.Y)).ToString());
             GetGcodeParameters();
         }
 
         public void SetCorrectedYWorkToZero()
         {
             double correctiony = Convert.ToDouble(ConfigurationManager.AppSettings["CorrectionY"]);
-            serialport.Write(Command.Gcode(string.Format("G10 L2 P{0} Y{1}\r", WorkCoordinates.Current.Index, MPOS.Y+ correctiony)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} Y{1}", WorkCoordinates.Current.Index, MPOS.Y+ correctiony)).ToString());
             GetGcodeParameters();
         }
 
         public void SetZWorkToZero()
         {
-            serialport.Write(Command.Gcode(string.Format("G10 L2 P{0} Z{1}\r", WorkCoordinates.Current.Index, MPOS.Z)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} Z{1}", WorkCoordinates.Current.Index, MPOS.Z)).ToString());
             GetGcodeParameters();
         }
 
         public void SetCorrectedZWorkToZero()
         {
             double correctionz = Convert.ToDouble(ConfigurationManager.AppSettings["CorrectionZ"]);
-            serialport.Write(Command.Gcode(string.Format("G10 L2 P{0} Z{1}\r", WorkCoordinates.Current.Index, MPOS.Z+ correctionz)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} Z{1}", WorkCoordinates.Current.Index, MPOS.Z+ correctionz)).ToString());
             GetGcodeParameters();
         }
 
@@ -970,7 +976,7 @@ namespace Vhr
 
         public void GoToWorkZero()
         {
-            if (InIdleState) serialport.Write(Command.Gcode("G90 G0 X0 Y0 Z0").ToString());
+            if (InIdleState) serialport.Write(Command.AddReturn("G90 G0 X0 Y0 Z0").ToString());
         }
 
         

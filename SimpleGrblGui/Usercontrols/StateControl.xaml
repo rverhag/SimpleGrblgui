@@ -23,11 +23,14 @@
 
         </Grid.ColumnDefinitions>
 
-       
+
+
+        <StackPanel Grid.Column="0"  Orientation="Horizontal">
+            <Label  Content="{Binding QueuedSize}" Margin="0 0 10 0"/>
+            <Label  Content="{Binding State}"/>
+        </StackPanel>
         
         
-        <Label Grid.Column="0" 
-               Content="{Binding State}"/>
         <Label Grid.Column="1" 
                Content="{Binding StateMessage}"/>
         <StackPanel Grid.Column="2" Orientation="Horizontal"  Visibility="{Binding GrblCommandVisibility }" Width="auto" Margin="0 0 100 0">

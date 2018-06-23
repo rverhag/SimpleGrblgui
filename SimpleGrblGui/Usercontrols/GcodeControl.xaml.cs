@@ -48,7 +48,7 @@ namespace VhR.SimpleGrblGui.Usercontrols
                         GcodeGrid.ScrollIntoView(item);
                         row = GcodeGrid.ItemContainerGenerator.ContainerFromIndex(_gcodeline.Index) as DataGridRow;
                     }
-                    //row.Focus();
+                   // row.Focus();
                     DataGridCell cell = GetCell(row, 2);
                     if (cell != null)
                     {

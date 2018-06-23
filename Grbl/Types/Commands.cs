@@ -63,7 +63,7 @@
             return new Command(string.Concat("$J=", _command, "\r"), string.Concat("$J=", _command, "\r"), "Jog");
         }
 
-        public static Command Gcode(string _command)
+        public static Command AddReturn(string _command)
         {
             return new Command(string.Concat(_command, "\r"), _command, "gcode");
         }

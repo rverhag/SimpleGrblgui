@@ -8,6 +8,8 @@ namespace Vhr.Gcode
 
         public bool IsProcessed { get; set; }
         public bool InSerialBuffer { get; set; }
+        public int SerialBufferLength { get; set; }
+
         public string response;
         public string Response
         {

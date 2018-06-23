@@ -145,6 +145,7 @@ namespace Vhr.Gcode
             _gcodeline.LineNumber = gcodechunks.Where(x => (x.StartsWith("N"))).FirstOrDefault();
             _gcodeline.Raw = _gcodeline.LineNumber != null ? _gcodeline.Raw.Replace(_gcodeline.LineNumber, "").TrimStart() : _gcodeline.Raw.TrimStart(); ;
             _gcodeline.GrblCommand = _gcodeline.Raw.Replace(" ", "");
+            _gcodeline.SerialBufferLength = _gcodeline.GrblCommand.Length + 1;  //Because "\r" is gonna be added.
 
             MinX = xto < MinX ? xto : MinX;
             MinY = yto < MinY ? yto : MinY;
