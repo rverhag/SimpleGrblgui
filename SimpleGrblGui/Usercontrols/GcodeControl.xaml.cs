@@ -36,24 +36,30 @@ namespace VhR.SimpleGrblGui.Usercontrols
         {
             await Task.Run(() => Dispatcher.BeginInvoke(new Action(delegate ()
             {
-                if (_gcodeline.InSerialBuffer)
+               // if (_gcodeline.InSerialBuffer)
                 {
-                    GcodeGrid.SelectedItems.Clear();
+                   // GcodeGrid.SelectedItems.Clear();
 
                     object item = GcodeGrid.Items[_gcodeline.Index];
+                    
                     GcodeGrid.SelectedItem = item;
 
-                    if (!(GcodeGrid.ItemContainerGenerator.ContainerFromIndex(_gcodeline.Index) is DataGridRow row))
+                    if (grbl.InRunState)
                     {
                         GcodeGrid.ScrollIntoView(item);
-                        row = GcodeGrid.ItemContainerGenerator.ContainerFromIndex(_gcodeline.Index) as DataGridRow;
                     }
-                   // row.Focus();
-                    DataGridCell cell = GetCell(row, 2);
-                    if (cell != null)
-                    {
-                        cell.Focus();
-                    }
+
+                    //if (!(GcodeGrid.ItemContainerGenerator.ContainerFromIndex(_gcodeline.Index) is DataGridRow row))
+                    //{
+                    //    GcodeGrid.ScrollIntoView(item);
+                    //    row = GcodeGrid.ItemContainerGenerator.ContainerFromIndex(_gcodeline.Index) as DataGridRow;
+                    //}
+                    ////row.Focus();
+                    //DataGridCell cell = GetCell(row, 2);
+                    //if (cell != null)
+                    //{
+                    //    cell.Focus();
+                    //}
                 }
             })));
         }
@@ -115,23 +121,6 @@ namespace VhR.SimpleGrblGui.Usercontrols
             }
 
             return null;
-        }
-
-       
-
-        private void GcodeGrid_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            GcodeGrid.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
-        }
-
-        private void GcodeGrid_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            GcodeGrid.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-        }
-
-        private void Button_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            grbl.StartProcessingGcodeAsync();
         }
     }
 }

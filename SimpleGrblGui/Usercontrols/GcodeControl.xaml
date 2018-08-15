@@ -19,8 +19,6 @@
                     VerticalAlignment="Top"  
                     HeadersVisibility="None"
                     EnableRowVirtualization="True"
-                     
-                    VerticalScrollBarVisibility="Hidden"
                       
                     AutoGenerateColumns="False" 
                     SelectionUnit="FullRow"  
@@ -34,26 +32,25 @@
                     FontSize="11" 
                     FontWeight="Bold" 
                     CanUserResizeRows="False"
-                    MouseEnter="GcodeGrid_MouseEnter"
-                    MouseLeave="GcodeGrid_MouseLeave"
-                    Margin=" 0 0 0 0"
+                    Margin=" 0 0 0 0" SelectionMode="Single"
                     >
+         
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Gcode" Binding="{Binding Index}" CanUserSort="False"  IsReadOnly="True" >
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Gcode" Binding="{Binding Raw}" CanUserSort="False"  IsReadOnly="True">
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Grbl-Response" Binding="{Binding Response}" 
-                                    MaxWidth="100" CanUserSort="False" IsReadOnly="True">
+                <DataGridTextColumn Header="Grbl-Response" 
+                                    Binding="{Binding Response}" 
+                                    MaxWidth="100"
+                                    CanUserSort="False" 
+                                    IsReadOnly="True">
                     <DataGridTextColumn.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Setter Property="ToolTip" Value="{Binding Response}" />
                         </Style>
                     </DataGridTextColumn.CellStyle>
-                    
                 </DataGridTextColumn>
-
-               
             </DataGrid.Columns>
         </DataGrid>
 

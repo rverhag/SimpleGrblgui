@@ -99,7 +99,7 @@ namespace Vhr
         #endregion
 
         #region Serial port related
-        private SerialPort serialport = null;
+        private SerialPort serialport;
 
         private void FinalizeSerialPort()
         {
@@ -115,31 +115,29 @@ namespace Vhr
 
         private void IntializeSerialPort()
         {
-            if (serialport == null)
+
+            serialport = new SerialPort
             {
-                serialport = new SerialPort
-                {
-                    PortName = Convert.ToString(ConfigurationManager.AppSettings["ComPort"]),
+                PortName = Convert.ToString(ConfigurationManager.AppSettings["ComPort"]),
 
-                    //Default encoding is ASCII-Encoding, but this is an 7 bit encoding. 
-                    //We need an 8 bit encoding and we'll go for ISO 8859-1
-                    Encoding = Encoding.GetEncoding(28591),
+                //Default encoding is ASCII-Encoding, but this is an 7 bit encoding. 
+                //We need an 8 bit encoding and we'll go for ISO 8859-1
+                Encoding = Encoding.GetEncoding(28591),
 
-                    BaudRate = Convert.ToInt32(ConfigurationManager.AppSettings["BaudRate"]),
-                    ReadBufferSize = Convert.ToInt32(ConfigurationManager.AppSettings["ReadBufferSize"]),
-                    WriteBufferSize = Convert.ToInt32(ConfigurationManager.AppSettings["WriteBufferSize"]),
-                    ReceivedBytesThreshold = Convert.ToInt32(ConfigurationManager.AppSettings["ReceivedBytesThreshold"]),
-                    DiscardNull = true
-                };
+                BaudRate = Convert.ToInt32(ConfigurationManager.AppSettings["BaudRate"]),
+                ReadBufferSize = Convert.ToInt32(ConfigurationManager.AppSettings["ReadBufferSize"]),
+                WriteBufferSize = Convert.ToInt32(ConfigurationManager.AppSettings["WriteBufferSize"]),
+                ReceivedBytesThreshold = Convert.ToInt32(ConfigurationManager.AppSettings["ReceivedBytesThreshold"]),
+                DiscardNull = true
+            };
 
-                serialport.DataReceived += Serialport_DataReceived;
+            serialport.DataReceived += Serialport_DataReceived;
 
-                if (!serialport.IsOpen) serialport.Open();
-                if (serialport.IsOpen)
-                {
-                    serialport.DiscardInBuffer();
-                    serialport.DiscardOutBuffer();
-                }
+            if (!serialport.IsOpen) serialport.Open();
+            if (serialport.IsOpen)
+            {
+                serialport.DiscardInBuffer();
+                serialport.DiscardOutBuffer();
             }
         }
 
@@ -157,10 +155,10 @@ namespace Vhr
             switch (firstletter)
             {
                 case 'O'://ok
-                    ProcessResponseAsync(data);
+                   ProcessResponse(data);
                     break;
                 case 'E'://it's an error, but still a response 
-                    ProcessResponseAsync(data, true);
+                    ProcessResponse(data, true);
                     break;
                 case '<': //It's a statusreport
                     {
@@ -218,29 +216,20 @@ namespace Vhr
 
         #region Response
 
-        private async Task ProcessResponseAsync(string _data, bool _iserror = false)
+        private void ProcessResponse(string _data, bool _iserror = false)
         {
-            if (GcodeIsRunning & (nextindexforbuffer < Gcode?.Count))
+            if (GcodeIsRunning)
             {
-                GcodeLine gcodeline = Gcode.Where(x => x.Index == nextindexforbuffer).First();
+                GcodeLine gcodeline = Gcode.Where(x => x.Index == lastprocessedindex).First();
                 gcodeline.InSerialBuffer = false;
                 gcodeline.IsProcessed = true;
-                QueuedSize -= gcodeline.SerialBufferLength;
-
                 gcodeline.Response = _iserror ? Error.Codes[_data.Split(':')[1]] : _data;
                 GcodeLineChanged?.Invoke(gcodeline, new EventArgs());
 
-                ++nextindexforbuffer;
-
-                await Task.Run(() => ProcessNextGcode());
+                ++lastprocessedindex;
             }
             else
             {
-                if (nextindexforbuffer >= Gcode?.Count)
-                {
-                    StopProcessingGcode();
-                }
-
                 if (_iserror)
                 {
                     ErrorReceived?.Invoke(this, new ErrorReceivedEventArgs(Error.Codes[_data.Split(':')[1]]));
@@ -274,7 +263,7 @@ namespace Vhr
         public int QueuedSize { get; set; } = 0;
 
         private int rx_buffer_size = 100;
-        private int nextindexforbuffer = 0;
+        private int lastprocessedindex = 0;
 
         public void StopProcessingGcode()
         {
@@ -282,39 +271,42 @@ namespace Vhr
             QueuedSize = 0;
         }
 
-        public async Task StartProcessingGcodeAsync()
+        public void StartProcessingGcode()
         {
             if (Gcode != null & (InIdleState | InCheckState))
             {
                 rx_buffer_size = Convert.ToInt16(ConfigurationManager.AppSettings["CommandBufferCapacity"]);
                 Gcode.Reset();
                 GcodeIsRunning = true;
-                nextindexforbuffer = 0;
+                lastprocessedindex = 0;
                 QueuedSize = 0;
 
-                await Task.Run(() => ProcessNextGcode());
+                Task.Run(() => ProcessGcode());
             }
         }
 
-        private void ProcessNextGcode()
+        private void ProcessGcode()
         {
-            var takeabreak = !InIdleState & !InCheckState & !InRunState;
+            bool takeabreak = false;
 
-            GcodeLine gcodeline = Gcode.Where(x => !x.IsProcessed & !x.InSerialBuffer).FirstOrDefault();
+            while (GcodeIsRunning)
+            {
+                GcodeIsRunning= Gcode.Where(x => !x.IsProcessed).FirstOrDefault() != null;
 
-            while (gcodeline != null && !takeabreak && (GcodeIsRunning & ((rx_buffer_size - QueuedSize) >= gcodeline.SerialBufferLength)))
+                takeabreak = !InIdleState & !InCheckState & !InRunState;
+
+                lock (Gcode) QueuedSize = Gcode.Where(x => !x.IsProcessed & x.InSerialBuffer).Sum(x => x.CommandLength);
+                GcodeLine gcodeline = Gcode.Where(x => !x.IsProcessed & !x.InSerialBuffer).FirstOrDefault();
+
+                while (gcodeline != null & !takeabreak && (GcodeIsRunning & ((rx_buffer_size - QueuedSize) >= gcodeline.CommandLength)))
                 {
-                gcodeline.InSerialBuffer = true;
-                gcodeline.Response = "Buffered";
-                QueuedSize += gcodeline.SerialBufferLength;
-
-                serialport.Write(Command.AddReturn(gcodeline.GrblCommand).ToString());
-
-                GcodeLineChanged?.Invoke(gcodeline, new EventArgs());
-                gcodeline = Gcode.Where(x => !x.IsProcessed & !x.InSerialBuffer).FirstOrDefault();
+                    serialport.Write(Command.AddReturn(gcodeline.GrblCommand).ToString());
+                    gcodeline.InSerialBuffer = true;
+                    lock (Gcode) QueuedSize = Gcode.Where(x => !x.IsProcessed & x.InSerialBuffer).Sum(x => x.CommandLength);
+                    gcodeline = Gcode.Where(x => !x.IsProcessed & !x.InSerialBuffer).FirstOrDefault();
+                }
             }
         }
-
 
         #endregion
 
@@ -692,9 +684,6 @@ namespace Vhr
         public void SendCommand(string _command)
         {
             serialport.Write(Command.AddReturn(_command).ToString());
-           
-
-           // Debug.WriteLine(_command);
         }
 
         public void IncreaseFeed1()
@@ -736,11 +725,9 @@ namespace Vhr
             if (InRunState) serialport.Write(Command.SetRapid25.ToString());
         }
 
-        public async void StartCycleAsync()
+        public void StartCycleAsync()
         {
             if (InHoldState | InDoorState) serialport.Write(Command.StartCycle.ToString());
-
-            if (GcodeIsRunning) await Task.Run(() => ProcessNextGcode());
         }
 
         public void HoldFeed()

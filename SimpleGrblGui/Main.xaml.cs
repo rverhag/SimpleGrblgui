@@ -14,6 +14,8 @@ namespace VhR.SimpleGrblGui
     {
         private Grbl grbl;
         private CameraControl cameracontrol;
+        //private Gcode gcode;
+       // private Drawing drawing = new Drawing();
 
         public Main()
         {
@@ -37,6 +39,10 @@ namespace VhR.SimpleGrblGui
             if (dlg.ShowDialog() == true)
             {
                 grbl.Gcode = new GcodeCollection(dlg.FileName);
+                //gcode = new Gcode();
+                //gcode.Show();
+
+              //  drawing.Show();
             }
         }
 
@@ -62,21 +68,21 @@ namespace VhR.SimpleGrblGui
 
         private void ShowCamera()
         {
-            if (cameracontrol == null)
-            {
-                cameracontrol = new CameraControl();
-                Grid.SetRow(ContentGrid, 1);
-                ContentGrid.Children.Add(cameracontrol);
-            }
+            //if (cameracontrol == null)
+            //{
+            //    cameracontrol = new CameraControl();
+            //    Grid.SetRow(ContentGrid, 1);
+            //    ContentGrid.Children.Add(cameracontrol);
+            //}
         }
 
         private void HideCamera()
         {
-            if (cameracontrol != null)
-            {
-                ContentGrid.Children.Remove(cameracontrol);
-                cameracontrol = null;
-            }
+            //if (cameracontrol != null)
+            //{
+            //    ContentGrid.Children.Remove(cameracontrol);
+            //    cameracontrol = null;
+            //}
         }
     }
 }

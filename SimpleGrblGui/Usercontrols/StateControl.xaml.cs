@@ -22,7 +22,7 @@ namespace VhR.SimpleGrblGui.Usercontrols
         private void GcodeButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             Grbl.Interface.Gcode.Reset();
-            Grbl.Interface.StartProcessingGcodeAsync();
+            Grbl.Interface.StartProcessingGcode();
         }
     }
 }
