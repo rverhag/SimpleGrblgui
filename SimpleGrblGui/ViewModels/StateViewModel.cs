@@ -10,15 +10,13 @@ namespace VhR.SimpleGrblGui.ViewModels
 {
     public class StateViewModel : INotifyPropertyChanged
     {
-        private Grbl grbl;
         public event PropertyChangedEventHandler PropertyChanged;
 
         public StateViewModel()
         {
-            grbl = Grbl.Interface;
-            grbl.StateChanged +=  Grbl_StateChanged;
-            grbl.GcodeChanged += Grbl_GcodeChanged;
-            grbl.GcodeLineChanged += Grbl_GcodeLineChanged;
+            App.Grbl.StateChanged +=  Grbl_StateChanged;
+            App.Grbl.GcodeChanged += Grbl_GcodeChanged;
+            App.Grbl.GcodeLineChanged += Grbl_GcodeLineChanged;
         }
 
         private void Grbl_GcodeLineChanged(object sender, System.EventArgs e)
@@ -43,17 +41,17 @@ namespace VhR.SimpleGrblGui.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("StartGcodeEnabled"));
         }
 
-        public ICommand ResetCommand { get { return new DelegatingCommand(grbl.Reset); } }
+        public ICommand ResetCommand { get { return new DelegatingCommand(App.Grbl.Reset); } }
         public ICommand GrblCommand { get { return new DelegatingCommand(Sendcommand); } }
         void Sendcommand(object parameter)
         {
-            grbl.SendCommand((string)parameter);
+            App.Grbl.SendCommand((string)parameter);
         }
         public Visibility GrblCommandVisibility
         {
             get
             {
-                switch (grbl.State)
+                switch (App.Grbl.State)
                 {
                     case GrblState.IDLE:
                     case GrblState.CHECK:
@@ -69,10 +67,10 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             get
             {
-                if (grbl.Gcode == null)
+                if (App.Grbl.Gcode == null)
                     return false;
                 else
-                    if (grbl.InIdleState || grbl.InCheckState)
+                    if (App.Grbl.InIdleState || App.Grbl.InCheckState)
                     return true;
                 else
                     return false;
@@ -83,23 +81,23 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             get
             {
-                switch (grbl.State)
+                switch (App.Grbl.State)
                 {
                     case GrblState.ALARM:
-                        return new DelegatingCommand(grbl.KillAlarmLock);
+                        return new DelegatingCommand(App.Grbl.KillAlarmLock);
                     case GrblState.RUN:
-                        return new DelegatingCommand(grbl.HoldFeed);
+                        return new DelegatingCommand(App.Grbl.HoldFeed);
                     case GrblState.IDLE:
-                        return new DelegatingCommand(grbl.EnableCheckmode);
+                        return new DelegatingCommand(App.Grbl.EnableCheckmode);
                     case GrblState.HOLD0:
                     case GrblState.HOLD1:
                     case GrblState.DOOR0:
                     case GrblState.DOOR1:
                     case GrblState.DOOR2:
                     case GrblState.DOOR3:
-                        return new DelegatingCommand(grbl.StartCycleAsync);
+                        return new DelegatingCommand(App.Grbl.StartCycleAsync);
                     default:
-                        return new DelegatingCommand(grbl.GetStatus);
+                        return new DelegatingCommand(App.Grbl.GetStatus);
                 }
             }
         }
@@ -108,7 +106,7 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             get
             {
-                switch (grbl.State)
+                switch (App.Grbl.State)
                 {
                     case GrblState.IDLE:
                         return "CheckMode";
@@ -133,7 +131,7 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             get
             {
-                switch (grbl.State)
+                switch (App.Grbl.State)
                 {
                     case GrblState.IDLE:
                     case GrblState.ALARM:
@@ -150,15 +148,15 @@ namespace VhR.SimpleGrblGui.ViewModels
                 }
             }
         }
-        public GrblState State { get { return grbl.State; } }
-        public string StateMessage { get { return grbl.StateMessage; } }
-        public int QueuedSize { get { return grbl.QueuedSize; } }
+        public GrblState State { get { return App.Grbl.State; } }
+        public string StateMessage { get { return App.Grbl.StateMessage; } }
+        public int QueuedSize { get { return App.Grbl.QueuedSize; } }
         
         public SolidColorBrush Background
         {
             get
             {
-                switch (grbl.State)
+                switch (App.Grbl.State)
                 {
                     case GrblState.IDLE:
                         return Brushes.Transparent;

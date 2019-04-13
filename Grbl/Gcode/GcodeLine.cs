@@ -10,6 +10,7 @@ namespace Vhr.Gcode
         public bool InSerialBuffer { get; set; }
 
         public int CommandLength { get; set; }
+
         public string response;
         public string Response
         {
@@ -23,6 +24,7 @@ namespace Vhr.Gcode
                 }
             }
         }
+
         public int Index { get; set; }
         public string Raw { get; set; }
         public string GrblCommand { get; set; }
@@ -33,6 +35,10 @@ namespace Vhr.Gcode
         public bool IsMetric { get; set; }
         public bool IsCuttingMotion { get; set; }
         public bool IsLinearMotion { get; set; }
+
+        /// <summary>
+        /// IsCCW Is Clockwise? 
+        /// </summary>
         public bool? IsCW { get; set; }
 
         public double Xfrom { get; set; }

@@ -41,6 +41,7 @@ namespace Vhr.Codes
             Add("35", "A G2 or G3 arc, traced with the offset definition, is missing the IJKoffset word in the selected plane to trace the arc.");
             Add("36", "There are unused, leftover g-code words that aren't used by any command in the block.");
             Add("37", "The G43.1 dynamic tool length offset command cannot apply an offset to an axis other than its configured axis. The Grbl default axis is the Z-axis.");
+            Add("38", "Tool number greater than max supported value.");
         }
 
         public static readonly Error Codes = new Error();

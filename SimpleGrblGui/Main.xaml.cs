@@ -12,37 +12,27 @@ namespace VhR.SimpleGrblGui
 {
     public partial class Main : Window
     {
-        private Grbl grbl;
         private CameraControl cameracontrol;
-        //private Gcode gcode;
-       // private Drawing drawing = new Drawing();
 
         public Main()
         {
             InitializeComponent();
-            Title = ConfigurationManager.AppSettings["ApplicationName"].ToString();
-            
-            Menu_Camera.Visibility = Convert.ToBoolean(ConfigurationManager.AppSettings["Camera"])? Visibility.Visible : Visibility.Hidden;
 
+            Title = ConfigurationManager.AppSettings["ApplicationName"].ToString();
+            Menu_Camera.Visibility = Convert.ToBoolean(ConfigurationManager.AppSettings["Camera"])? Visibility.Visible : Visibility.Hidden;
             DataContext = new MainViewModel();
-            grbl = Grbl.Interface;
         }
 
         private void Menu_open_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog dlg = new OpenFileDialog();
-
-            dlg.FileName = "*.nc"; 
-            dlg.DefaultExt = ".nc"; // Default file extension
-            dlg.Filter = "Cnc gcode (.nc)|*.nc;*.cnc"; // Filter files by extension
+            OpenFileDialog dlg = new OpenFileDialog
+            {
+                Filter = "Cnc gcode (.nc)|*.nc;*.cnc;*.ngc;*.gcode" 
+            };
 
             if (dlg.ShowDialog() == true)
             {
-                grbl.Gcode = new GcodeCollection(dlg.FileName);
-                //gcode = new Gcode();
-                //gcode.Show();
-
-              //  drawing.Show();
+                App.Grbl.Gcode = new GcodeCollection(dlg.FileName);
             }
         }
 
@@ -54,7 +44,7 @@ namespace VhR.SimpleGrblGui
 
         private void Menu_Camera_Click(object sender, RoutedEventArgs e)
         {
-            if (cameracontrol != null)
+            if (Camera.Visibility == Visibility.Visible)
             {
                 Menu_Camera.Header = "_Camera";
                 HideCamera();
@@ -68,21 +58,20 @@ namespace VhR.SimpleGrblGui
 
         private void ShowCamera()
         {
-            //if (cameracontrol == null)
-            //{
-            //    cameracontrol = new CameraControl();
-            //    Grid.SetRow(ContentGrid, 1);
-            //    ContentGrid.Children.Add(cameracontrol);
-            //}
+            Drawing.Visibility = Visibility.Hidden;
+            Camera.Visibility = Visibility.Visible;
         }
 
         private void HideCamera()
         {
-            //if (cameracontrol != null)
-            //{
-            //    ContentGrid.Children.Remove(cameracontrol);
-            //    cameracontrol = null;
-            //}
+            Camera.Visibility = Visibility.Hidden;
+            Drawing.Visibility = Visibility.Visible;
+        }
+
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            App.Grbl.Reset();
         }
     }
 }

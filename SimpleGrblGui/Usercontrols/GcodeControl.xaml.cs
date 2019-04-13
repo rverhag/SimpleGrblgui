@@ -5,25 +5,19 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
-using Vhr;
 using Vhr.Gcode;
 
 namespace VhR.SimpleGrblGui.Usercontrols
 {
-    
     public partial class GcodeControl : UserControl
     {
-        private Grbl grbl;
 
         public GcodeControl()
         {
             InitializeComponent();
 
-            DataContext = Grbl.Interface;
-
-            grbl = Grbl.Interface;
-            grbl.GcodeLineChanged += Grbl_GcodeLineChanged;
-         
+            DataContext = App.Grbl;
+            App.Grbl.GcodeLineChanged += Grbl_GcodeLineChanged;
         }
 
         private void Grbl_GcodeLineChanged(object sender, EventArgs e)
@@ -44,7 +38,7 @@ namespace VhR.SimpleGrblGui.Usercontrols
                     
                     GcodeGrid.SelectedItem = item;
 
-                    if (grbl.InRunState)
+                    if (App.Grbl.InRunState)
                     {
                         GcodeGrid.ScrollIntoView(item);
                     }

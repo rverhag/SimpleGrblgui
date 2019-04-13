@@ -12,17 +12,20 @@ namespace VhR.SimpleGrblGui.ViewModels
     public class CoordinatesViewModel: INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        private Grbl grbl;
 
         public CoordinatesViewModel()
         {
-            grbl = Grbl.Interface;
-            grbl.CoordinateChanged += Grbl_CoordinateChanged;
-            
-            grbl.StateChanged += Grbl_StateChanged;
-            grbl.FeedRateChanged += Grbl_FeedRateChanged;
-            grbl.CurrentWorkCoordinateChanged += Grbl_CurrentWorkCoordinateChanged;
-            grbl.SpindleStateChanged += Grbl_SpindleStateChanged;
+            App.Grbl.CoordinateChanged += Grbl_CoordinateChanged;
+            App.Grbl.StateChanged += Grbl_StateChanged;
+            App.Grbl.FeedRateChanged += Grbl_FeedRateChanged;
+            App.Grbl.CurrentWorkCoordinateChanged += Grbl_CurrentWorkCoordinateChanged;
+            App.Grbl.SpindleStateChanged += Grbl_SpindleStateChanged;
+            App.Grbl.CoolingStateChanged += Grbl_CoolingStateChanged;
+        }
+
+        private void Grbl_CoolingStateChanged(object sender, EventArgs e)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ToggleCooling"));
         }
 
         private void Grbl_SpindleStateChanged(object sender, EventArgs e)
@@ -44,6 +47,7 @@ namespace VhR.SimpleGrblGui.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("MaxFeedRate"));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("HomingCycleEnabled"));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SpindleButtonEnabled"));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("CoolingButtonEnabled"));
         }
 
         private void Grbl_CoordinateChanged(object sender, EventArgs e)
@@ -52,36 +56,51 @@ namespace VhR.SimpleGrblGui.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(coordinate.Type));
         }
 
-        public string FeedRate { get { return string.Format("Feed {0} mm/min",grbl.FeedRate); } }
+        public string FeedRate { get { return string.Format("Feed {0} mm/min",App.Grbl.FeedRate); } }
 
-        public Coordinate WCO { get { return grbl.WCO; } }
-        public Coordinate MPOS { get { return grbl.MPOS; } }
-        public Coordinate WPOS { get { return grbl.WPOS; } }
+        public Coordinate WCO { get { return App.Grbl.WCO; } }
+        public Coordinate MPOS { get { return App.Grbl.MPOS; } }
+        public Coordinate WPOS { get { return App.Grbl.WPOS; } }
 
-        public ICommand GoToWorkZero { get { return new DelegatingCommand(grbl.GoToWorkZero); } }
-        public ICommand RunHomingcycle { get { return new DelegatingCommand(grbl.RunHomingcycle); } }
+        public ICommand GoToWorkZero { get { return new DelegatingCommand(App.Grbl.GoToWorkZero); } }
+        public ICommand RunHomingcycle { get { return new DelegatingCommand(App.Grbl.RunHomingcycle); } }
 
-        public ICommand SetXWorkToZero { get { return new DelegatingCommand(grbl.SetXWorkToZero); } }
-        public ICommand SetYWorkToZero { get { return new DelegatingCommand(grbl.SetYWorkToZero); } }
-        public ICommand SetZWorkToZero { get { return new DelegatingCommand(grbl.SetZWorkToZero); } }
+        public ICommand SetXWorkToZero { get { return new DelegatingCommand(App.Grbl.SetXWorkToZero); } }
+        public ICommand SetYWorkToZero { get { return new DelegatingCommand(App.Grbl.SetYWorkToZero); } }
+        public ICommand SetZWorkToZero { get { return new DelegatingCommand(App.Grbl.SetZWorkToZero); } }
 
-        public ICommand SetCorrectedXWorkToZero { get { return new DelegatingCommand(grbl.SetCorrectedXWorkToZero); } }
-        public ICommand SetCorrectedYWorkToZero { get { return new DelegatingCommand(grbl.SetCorrectedYWorkToZero); } }
-        public ICommand SetCorrectedZWorkToZero { get { return new DelegatingCommand(grbl.SetCorrectedZWorkToZero); } }
+        public ICommand SetCorrectedXWorkToZero { get { return new DelegatingCommand(App.Grbl.SetCorrectedXWorkToZero); } }
+        public ICommand SetCorrectedYWorkToZero { get { return new DelegatingCommand(App.Grbl.SetCorrectedYWorkToZero); } }
+        public ICommand SetCorrectedZWorkToZero { get { return new DelegatingCommand(App.Grbl.SetCorrectedZWorkToZero); } }
 
-        public ICommand IncreaseFeed1 { get { return new DelegatingCommand(grbl.IncreaseFeed1); } }
-        public ICommand IncreaseFeed10 { get { return new DelegatingCommand(grbl.IncreaseFeed10); } }
-        public ICommand SetFeed100 { get { return new DelegatingCommand(grbl.SetFeed100); } }
-        public ICommand DecreaseFeed1 { get { return new DelegatingCommand(grbl.DecreaseFeed1); } }
-        public ICommand DecreaseFeed10 { get { return new DelegatingCommand(grbl.DecreaseFeed10); } }
+        public ICommand IncreaseFeed1 { get { return new DelegatingCommand(App.Grbl.IncreaseFeed1); } }
+        public ICommand IncreaseFeed10 { get { return new DelegatingCommand(App.Grbl.IncreaseFeed10); } }
+        public ICommand SetFeed100 { get { return new DelegatingCommand(App.Grbl.SetFeed100); } }
+        public ICommand DecreaseFeed1 { get { return new DelegatingCommand(App.Grbl.DecreaseFeed1); } }
+        public ICommand DecreaseFeed10 { get { return new DelegatingCommand(App.Grbl.DecreaseFeed10); } }
 
 
         public ICommand ToggleSpindle
         {
             get
             {
-                if ((grbl.SpindleState == SpindleState.ON) & grbl.InIdleState) return new DelegatingCommand(grbl.StopSpindle);
-                else return new DelegatingCommand(grbl.StartSpindle);
+                if ((App.Grbl.SpindleState == SpindleState.ON) & App.Grbl.InIdleState) return new DelegatingCommand(App.Grbl.StopSpindle);
+                else return new DelegatingCommand(App.Grbl.StartSpindle);
+            }
+        }
+
+        public ICommand ToggleCooling
+        {
+            get
+            {
+                if (App.Grbl.CoolingState == CoolingState.FLOOD_ON | App.Grbl.CoolingState == CoolingState.MIST_ON)
+                {
+                    return new DelegatingCommand(App.Grbl.StopCooling);
+                }
+                else
+                {
+                    return new DelegatingCommand(App.Grbl.StartCooling);
+                }
             }
         }
 
@@ -89,16 +108,23 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             get
             {
-                return grbl.InIdleState;
+                return App.Grbl.InIdleState;
             }
         }
 
+        public bool CoolingButtonEnabled
+        {
+            get
+            {
+                return App.Grbl.InIdleState;
+            }
+        }
 
         public bool ZeroButtonsEnabled
         {
             get
             {
-                return grbl.InIdleState;
+                return App.Grbl.InIdleState;
             }
         }
 
@@ -106,7 +132,7 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             get
             {
-                return grbl.HomingCycleEnabled && grbl.InIdleState;
+                return App.Grbl.HomingCycleEnabled && App.Grbl.InIdleState;
             }
         }
 
@@ -114,7 +140,7 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             get
             {
-                return grbl.State == GrblState.IDLE ? true : false;
+                return App.Grbl.State == GrblState.IDLE ? true : false;
             }
         }
 
@@ -127,12 +153,12 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             get
             {
-                return grbl.WorkCoordinates.Current.Name;
+                return App.Grbl.WorkCoordinates.Current.Name;
             }
             set
             {
-                grbl.SendCommand(value);
-                grbl.GetParserstate();
+                App.Grbl.SendCommand(value);
+                App.Grbl.GetParserstate();
             }
         }
 
@@ -140,7 +166,7 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             get
             {
-                return (grbl.State == GrblState.IDLE | grbl.State== GrblState.JOG)  ? true : false;
+                return (App.Grbl.State == GrblState.IDLE | App.Grbl.State== GrblState.JOG)  ? true : false;
             }
         }
 
@@ -148,7 +174,7 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             get
             {
-                return grbl.State == GrblState.RUN ? true : false;
+                return App.Grbl.State == GrblState.RUN ? true : false;
             }
         }
 
@@ -156,7 +182,7 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             get
             {
-                return grbl.MaxRate;
+                return App.Grbl.MaxRate;
             }
         }
     }

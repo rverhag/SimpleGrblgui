@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO.Ports;
@@ -17,6 +18,14 @@ namespace Vhr
     
     public sealed class Grbl : IDisposable
     {
+        private static ILog Log
+        {
+            get
+            {
+                return LogManager.GetLogger(typeof(Grbl));
+            }
+        }
+
         #region events
         public event EventHandler StateChanged;
         public event EventHandler IsReset;
@@ -43,6 +52,11 @@ namespace Vhr
 
         private Grbl()
         {
+            Log.Info("New Grbl-instance");
+        }
+
+        public void Start()
+        {
             IntializeSerialPort();
 
             pollinginterval = Convert.ToInt16(ConfigurationManager.AppSettings["PollingInterval"]);
@@ -55,6 +69,12 @@ namespace Vhr
 
             Initialize();
         }
+
+        public void Stop()
+        {
+            FinalizeSerialPort();
+        }
+
 
         public bool Initialized { get; set; } = false;
         public void Initialize()
@@ -132,6 +152,8 @@ namespace Vhr
             };
 
             serialport.DataReceived += Serialport_DataReceived;
+            serialport.ErrorReceived += Serialport_ErrorReceived;
+            serialport.PinChanged += Serialport_PinChanged;
 
             if (!serialport.IsOpen) serialport.Open();
             if (serialport.IsOpen)
@@ -139,6 +161,16 @@ namespace Vhr
                 serialport.DiscardInBuffer();
                 serialport.DiscardOutBuffer();
             }
+        }
+
+        private void Serialport_PinChanged(object sender, SerialPinChangedEventArgs e)
+        {
+            Log.Error("Error received", new Exception(e.ToString()));
+        }
+
+        private void Serialport_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
+        {
+            Log.Error("Error received", new Exception(e.ToString()));
         }
 
         private void Serialport_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -525,6 +557,8 @@ namespace Vhr
                 {
                     coolingstate = value;
                     CoolingStateChanged?.Invoke(this, new EventArgs());
+
+                    FeedbackMessage = (coolingstate == CoolingState.FLOOD_ON | coolingstate == CoolingState.MIST_ON) ? "Cooling started" : coolingstate == CoolingState.OFF ? "Cooling stopped" : "";
                 }
             }
         }
@@ -650,6 +684,24 @@ namespace Vhr
             if (InIdleState & SpindleState == SpindleState.ON)
             {
                 serialport.Write(Command.StopSpindle.ToString());
+                GetParserstate();
+            }
+        }
+
+        public void StartCooling()
+        {
+            if (CoolingState != CoolingState.FLOOD_ON & CoolingState != CoolingState.MIST_ON)
+            {
+                serialport.Write(Command.StartCooling.ToString());
+                GetParserstate();
+            }
+        }
+
+        public void StopCooling()
+        {
+            if (CoolingState == CoolingState.FLOOD_ON | CoolingState == CoolingState.MIST_ON ) 
+            {
+                serialport.Write(Command.StopCooling.ToString());
                 GetParserstate();
             }
         }

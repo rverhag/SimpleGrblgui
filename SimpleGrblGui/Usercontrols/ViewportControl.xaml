@@ -26,7 +26,7 @@
                 Title="{Binding Title}"
                 SubTitle="{Binding SubTitle}"
                 Camera="{Binding Camera}"
-                RenderTechnique="{Binding RenderTechnique}"
+                
                 EffectsManager="{Binding EffectsManager}"
            >
 
@@ -42,7 +42,7 @@
         <helix:LineGeometryModel3D Name="Routercut" Geometry="{Binding RouterCut}" Color="Blue"/>
         <helix:LineGeometryModel3D Name="Routermove" Geometry="{Binding RouterMove}" Color="Red"/>
         <helix:LineGeometryModel3D Name="Currentposition" Geometry="{Binding CurrentPosition}" Color="Black"/>
-        <helix:LineGeometryModel3D Name="processed" Geometry="{Binding Processed}" Color="LightGray"/>
+        <helix:LineGeometryModel3D Name="processed" Geometry="{Binding Processed}" Color="GreenYellow"/>
 
     </helix:Viewport3DX>
 

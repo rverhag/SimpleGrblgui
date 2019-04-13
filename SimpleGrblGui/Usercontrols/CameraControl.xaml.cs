@@ -8,16 +8,24 @@ namespace VhR.SimpleGrblGui.Usercontrols
 {
     public partial class CameraControl : UserControl
     {
-        private Grbl grbl;
-        private CapPlayer capplayer = null;
-        private Image CenterLines = null;
+        private Image centerLines = null;
 
         public CameraControl()
         {
-            grbl = Grbl.Interface;
             InitializeComponent();
 
+            DeviceBox.ItemsSource = CapDevice.Devices;
+            DeviceBox.DisplayMemberPath = "Name";
+            DeviceBox.SelectionChanged += DeviceBox_SelectionChanged;
+            DeviceBox.SelectedIndex = 0;
+
             ColorCombo.SelectionChanged += ColorCombo_SelectionChanged;
+            ColorCombo.SelectedColor = Brushes.Red;
+        }
+
+        private void DeviceBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Player.Device = (CapDevice)DeviceBox.SelectedItem;
         }
 
         private void ColorCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -25,145 +33,133 @@ namespace VhR.SimpleGrblGui.Usercontrols
             DrawGrid();
         }
 
-        void capplayer_SizeChanged(object sender, SizeChangedEventArgs e)
+        void CapPlayer_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             DrawGrid();
         }
 
         private void DrawGrid()
         {
-            ImageGrid.Children.Remove(CenterLines);
-
-            if (capplayer != null && CenterLines != null)
+            if (Player != null && centerLines != null)
             {
-                double videoheigth = capplayer.ActualHeight == 0 ? 2 : capplayer.ActualHeight;
-                double videowidth = capplayer.ActualWidth == 0 ? 2 : capplayer.ActualWidth;
+                int verticallines = 5;
+                int horizontallines = 5;
+                int circles = 3;
+
+                CameraGrid.Children.Remove(centerLines);
+                DrawingGroup gridlines = new DrawingGroup();
+
+                double videoheigth = Player.ActualHeight == 0 ? 2 : Player.ActualHeight;
+                double videowidth = Player.ActualWidth == 0 ? 2 : Player.ActualWidth;
 
                 double videoverticalhalf = videoheigth / 2;
                 double videohorizontalhalf = videowidth / 2;
 
-                LineGeometry horizontal = new LineGeometry(new Point(0, videoverticalhalf), new Point(videowidth, videoverticalhalf));
-                LineGeometry vertical = new LineGeometry(new Point(videohorizontalhalf, 0), new Point(videohorizontalhalf, videoheigth));
-                LineGeometry diagonal1 = new LineGeometry(new Point(videohorizontalhalf, 0), new Point(videohorizontalhalf, videoheigth))
-                {
-                    Transform = new RotateTransform(45, videohorizontalhalf, videoverticalhalf)
-                };
-                LineGeometry diagonal2 = new LineGeometry(new Point(videohorizontalhalf, 0), new Point(videohorizontalhalf, videoheigth))
-                {
-                    Transform = new RotateTransform(-45, videohorizontalhalf, videoverticalhalf)
-                };
-                EllipseGeometry center1 = new EllipseGeometry(new Point(videohorizontalhalf, videoverticalhalf), 15, 15);
-                EllipseGeometry center2 = new EllipseGeometry(new Point(videohorizontalhalf, videoverticalhalf), 40, 40);
-                EllipseGeometry center4 = new EllipseGeometry(new Point(videohorizontalhalf, videoverticalhalf), 80, 80);
-                EllipseGeometry center3 = new EllipseGeometry(new Point(videohorizontalhalf, videoverticalhalf), videoverticalhalf, videoverticalhalf);
+                Point lowerleft = new Point(0, 0);
+                Point lowerright = new Point(videowidth, 0);
+                Point upperleft = new Point(0, videoheigth);
+                Point upperright = new Point(videowidth, videoheigth);
+                Point centre = new Point(videohorizontalhalf, videoverticalhalf);
 
-                GeometryDrawing horizontaldraw = new GeometryDrawing
-                {
-                    
-                    Pen = new Pen(ColorCombo.SelectedColor, 0.5),
-                    Geometry = horizontal
-                };
-
-                GeometryDrawing verticaldraw = new GeometryDrawing
+                /*First a rectangle for the player */
+                RectangleGeometry rectangle = new RectangleGeometry(new Rect(lowerleft,upperright));
+                GeometryDrawing rectangledraw = new GeometryDrawing
                 {
                     Pen = new Pen(ColorCombo.SelectedColor, 0.5),
-                    Geometry = vertical
+                    Geometry = rectangle
                 };
-
-                GeometryDrawing diagonal1draw = new GeometryDrawing
+                gridlines.Children.Add(rectangledraw);
+               
+                /*vertical lines*/
+                double verticalspace = videoheigth / (horizontallines + 1);
+                for (int y=0; y<= horizontallines; y++)
                 {
-                    Pen = new Pen(ColorCombo.SelectedColor, 0.5),
-                    Geometry = diagonal1
-                };
+                    LineGeometry horizontal = new LineGeometry(new Point(0, y* verticalspace), new Point(videowidth, y * verticalspace));
+                    GeometryDrawing horizontaldraw = new GeometryDrawing
+                    {
+                        Pen = new Pen(ColorCombo.SelectedColor, 0.5),
+                        Geometry = horizontal,
+                        
+                    };
+                    gridlines.Children.Add(horizontaldraw);
+                }
 
-                GeometryDrawing diagonal2draw = new GeometryDrawing
+                /*horizontal lines*/
+                double horizontalspace = videowidth / (verticallines + 1);
+                for (int x = 0; x <= verticallines; x++)
                 {
-                    Pen = new Pen(ColorCombo.SelectedColor, 0.5),
-                    Geometry = diagonal2
-                };
+                    LineGeometry vertictal = new LineGeometry(new Point(x* horizontalspace, 0), new Point(x * horizontalspace, videoheigth));
+                    GeometryDrawing verticaldraw = new GeometryDrawing
+                    {
+                        Pen = new Pen(ColorCombo.SelectedColor, 0.5),
+                        Geometry = vertictal
+                    };
+                    gridlines.Children.Add(verticaldraw);
+                }
 
+                /* circles*/
+                double dradius = (videoheigth/2) / (circles);
+                for (int c = 0; c <= circles; c++)
+                {
+                    EllipseGeometry center = new EllipseGeometry(centre, c* dradius, c * dradius);
+                    GeometryDrawing centerdraw = new GeometryDrawing
+                    {
+                        Pen = new Pen(ColorCombo.SelectedColor, 0.5),
+                        Geometry = center
+                    };
+                    gridlines.Children.Add(centerdraw);
+                }
 
-
+                EllipseGeometry center1 = new EllipseGeometry(centre, 25,25);
                 GeometryDrawing centerdraw1 = new GeometryDrawing
                 {
                     Pen = new Pen(ColorCombo.SelectedColor, 0.5),
                     Geometry = center1
                 };
+                gridlines.Children.Add(centerdraw1);
 
-                GeometryDrawing centerdraw2 = new GeometryDrawing
+                /* diagonals */
+                LineGeometry diagonal1 = new LineGeometry(upperleft, lowerright);
+                GeometryDrawing diagonal1draw = new GeometryDrawing
                 {
-                    //Pen = new Pen(Brushes.Yellow, 0.5),
                     Pen = new Pen(ColorCombo.SelectedColor, 0.5),
-                    Geometry = center2
+                    Geometry = diagonal1
                 };
-                GeometryDrawing centerdraw3 = new GeometryDrawing
+                gridlines.Children.Add(diagonal1draw);
+
+                LineGeometry diagonal2 = new LineGeometry(lowerleft, upperright);
+                GeometryDrawing diagonal2draw = new GeometryDrawing
                 {
-                    //Pen = new Pen(Brushes.Yellow, 0.5),
                     Pen = new Pen(ColorCombo.SelectedColor, 0.5),
-                    Geometry = center3
+                    Geometry = diagonal2
                 };
+                gridlines.Children.Add(diagonal2draw);
 
-                GeometryDrawing centerdraw4 = new GeometryDrawing
-                {
-                    //Pen = new Pen(Brushes.Yellow, 0.5),
-                    Pen = new Pen(ColorCombo.SelectedColor, 0.5),
-                    Geometry = center4
-                };
-
-                DrawingGroup centerdrawing = new DrawingGroup();
-                centerdrawing.Children.Add(horizontaldraw);
-                centerdrawing.Children.Add(verticaldraw);
-                centerdrawing.Children.Add(diagonal1draw);
-                centerdrawing.Children.Add(diagonal2draw);
-
-                if (videowidth > 0)
-                {
-                    centerdrawing.Children.Add(centerdraw1);
-                    centerdrawing.Children.Add(centerdraw2);
-                    centerdrawing.Children.Add(centerdraw3);
-                    centerdrawing.Children.Add(centerdraw4);
-                }
-
-                CenterLines.Source = new DrawingImage(centerdrawing);
-
-                ImageGrid.Children.Add(CenterLines);
+                centerLines.Source = new DrawingImage(gridlines);
+                Panel.SetZIndex(centerLines, 2);
+                CameraGrid.Children.Add(centerLines);
             }
         }
 
-        private void ImageGrid_Unloaded(object sender, RoutedEventArgs e)
+        private void UserControl_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            ImageGrid.Children.Remove(capplayer);
-            ImageGrid.Children.Remove(CenterLines);
-
-            CenterLines = null;
-
-            if (capplayer != null)
+            if ((bool)e.NewValue) //control is visible
             {
-                capplayer.SizeChanged -= capplayer_SizeChanged;
-                capplayer.Dispose();
-                capplayer = null;
+                Player.Device?.Start();
+                centerLines = new Image();
+                DrawGrid();
+            }
+            else
+            {
+                CameraGrid.Children.Remove(centerLines);
+                centerLines = null;
+                Player.Device?.Stop();
             }
         }
 
-        private void ImageGrid_Loaded(object sender, RoutedEventArgs e)
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            CenterLines = new Image();
-            PlaceCameraView();
-            DrawGrid();
-        }
-
-        private void PlaceCameraView()
-        {
-            capplayer = new CapPlayer
-            {
-               // Margin = new Thickness(15)
-            };
-            // capplayer.Framerate = 2;
-
-            ImageGrid.Children.Add(capplayer);
-
-            CenterLines.BringIntoView();
-            capplayer.SizeChanged += capplayer_SizeChanged;
+            Player.Device?.Stop();
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using HelixToolkit.Wpf.SharpDX;
 using System;
 using System.Collections.Generic;
-using Vhr;
 using Vhr.Gcode;
 using VhR.SimpleGrblGui.Classes;
 using Vector3 = SharpDX.Vector3;
@@ -11,13 +10,11 @@ namespace VhR.SimpleGrblGui.ViewModels
 {
     public class ViewportViewModel :  ObservableObject, IDisposable
     {
-        private Grbl grbl;
-
         private LineBuilder localprocessed = new LineBuilder();
 
-        private double X0 { get { return grbl.WorkCoordinates.Current.X; } }
-        private double Y0 { get { return grbl.WorkCoordinates.Current.Y; } }
-        private double Z0 { get { return grbl.WorkCoordinates.Current.Z; } }
+        private double X0 { get { return App.Grbl.WorkCoordinates.Current.X; } }
+        private double Y0 { get { return App.Grbl.WorkCoordinates.Current.Y; } }
+        private double Z0 { get { return App.Grbl.WorkCoordinates.Current.Z; } }
 
         private string title;
         public string Title
@@ -165,11 +162,10 @@ namespace VhR.SimpleGrblGui.ViewModels
 
         public ViewportViewModel()
         {
-            grbl = Grbl.Interface;
-            grbl.GcodeChanged += Grbl_GcodeChanged;
-            grbl.CoordinateChanged += Grbl_CoordinateChanged;
-            grbl.GcodeLineChanged += Grbl_GcodeLineChanged;
-            grbl.IsReset += Grbl_IsReset;
+            App.Grbl.GcodeChanged += Grbl_GcodeChanged;
+            App.Grbl.CoordinateChanged += Grbl_CoordinateChanged;
+            App.Grbl.GcodeLineChanged += Grbl_GcodeLineChanged;
+            App.Grbl.IsReset += Grbl_IsReset;
 
             Camera = new PerspectiveCamera
             {
@@ -184,7 +180,7 @@ namespace VhR.SimpleGrblGui.ViewModels
             };
 
             EffectsManager = new DefaultEffectsManager();
-            RenderTechnique = EffectsManager[DefaultRenderTechniqueNames.Blinn];
+            RenderTechnique = EffectsManager[DefaultRenderTechniqueNames.Volume3D];
 
             CreateMachinespace();
         }
@@ -235,14 +231,14 @@ namespace VhR.SimpleGrblGui.ViewModels
         private void Grbl_CoordinateChanged(object sender, EventArgs e)
         {
             var box = new LineBuilder();
-            box.AddBox(new Vector3((float)grbl.MPOS.X, (float)grbl.MPOS.Y, (float)grbl.MPOS.Z + 10), 1, 1, 20);
+            box.AddBox(new Vector3((float)App.Grbl.MPOS.X, (float)App.Grbl.MPOS.Y, (float)App.Grbl.MPOS.Z + 10), 1, 1, 20);
             CurrentPosition = box.ToLineGeometry3D();
         }
 
         private void Grbl_GcodeChanged(object sender, System.EventArgs e)
         {
-            Title = grbl.Gcode.FileName;
-            SubTitle = string.Format("Number of lines: {0}", grbl.Gcode.Count);
+            Title = App.Grbl.Gcode.FileName;
+            SubTitle = string.Format("Number of lines: {0}", App.Grbl.Gcode.Count);
 
             localprocessed = new LineBuilder();
             Processed = null;
@@ -261,15 +257,15 @@ namespace VhR.SimpleGrblGui.ViewModels
             var machinespace = new LineBuilder();
 
             Vector3 p0machine = new Vector3(0, 0, 0);
-            Vector3 p1machine = new Vector3(0 - (float)grbl.MaxXDistance, 0, 0);
-            Vector3 p2machine = new Vector3(0 - (float)grbl.MaxXDistance, 0 - (float)grbl.MaxYDistance, 0);
-            Vector3 p3machine = new Vector3(0, 0 - (float)grbl.MaxYDistance, 0);
-            Vector3 p4machine = new Vector3(0, 0, 0 - (float)grbl.MaxZDistance);
-            Vector3 p5machine = new Vector3(0 - (float)grbl.MaxXDistance, 0, 0 - (float)grbl.MaxZDistance);
-            Vector3 p6machine = new Vector3(0 - (float)grbl.MaxXDistance, 0 - (float)grbl.MaxYDistance, 0 - (float)grbl.MaxZDistance);
-            Vector3 p7machine = new Vector3(0, 0 - (float)grbl.MaxYDistance, 0 - (float)grbl.MaxZDistance);
+            Vector3 p1machine = new Vector3(0 - (float)App.Grbl.MaxXDistance, 0, 0);
+            Vector3 p2machine = new Vector3(0 - (float)App.Grbl.MaxXDistance, 0 - (float)App.Grbl.MaxYDistance, 0);
+            Vector3 p3machine = new Vector3(0, 0 - (float)App.Grbl.MaxYDistance, 0);
+            Vector3 p4machine = new Vector3(0, 0, 0 - (float)App.Grbl.MaxZDistance);
+            Vector3 p5machine = new Vector3(0 - (float)App.Grbl.MaxXDistance, 0, 0 - (float)App.Grbl.MaxZDistance);
+            Vector3 p6machine = new Vector3(0 - (float)App.Grbl.MaxXDistance, 0 - (float)App.Grbl.MaxYDistance, 0 - (float)App.Grbl.MaxZDistance);
+            Vector3 p7machine = new Vector3(0, 0 - (float)App.Grbl.MaxYDistance, 0 - (float)App.Grbl.MaxZDistance);
 
-            // machinespacelines.AddBox(new Vector3(0, 0, 0), grbl.MaxXDistance, grbl.MaxYDistance, grbl.MaxZDistance);
+            // machinespacelines.AddBox(new Vector3(0, 0, 0), App.Grbl.MaxXDistance, App.Grbl.MaxYDistance, App.Grbl.MaxZDistance);
 
             machinespace.AddLine(p0machine, p1machine);
             machinespace.AddLine(p0machine, p1machine);
@@ -292,14 +288,14 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             var workspace = new LineBuilder();
 
-            Vector3 p0work = new Vector3((float)(X0 + grbl.Gcode.MinX), (float)(Y0 + grbl.Gcode.MinY), (float)(Z0 + grbl.Gcode.MinZ));
-            Vector3 p1work = new Vector3((float)(p0work.X + grbl.Gcode.DeltaX), p0work.Y, p0work.Z);
-            Vector3 p2work = new Vector3((float)(p0work.X + grbl.Gcode.DeltaX), (float)(p0work.Y + grbl.Gcode.DeltaY), p0work.Z);
-            Vector3 p3work = new Vector3(p0work.X, (float)(p0work.Y + grbl.Gcode.DeltaY), p0work.Z);
-            Vector3 p4work = new Vector3(p0work.X, p0work.Y, (float)(p0work.Z + grbl.Gcode.DeltaZ));
-            Vector3 p5work = new Vector3((float)(p0work.X + grbl.Gcode.DeltaX), p0work.Y, (float)(p0work.Z + grbl.Gcode.DeltaZ));
-            Vector3 p6work = new Vector3((float)(p0work.X + grbl.Gcode.DeltaX), (float)(p0work.Y + grbl.Gcode.DeltaY), (float)(p0work.Z + grbl.Gcode.DeltaZ));
-            Vector3 p7work = new Vector3(p0work.X, (float)(p0work.Y + grbl.Gcode.DeltaY), (float)(p0work.Z + grbl.Gcode.DeltaZ));
+            Vector3 p0work = new Vector3((float)(X0 + App.Grbl.Gcode.MinX), (float)(Y0 + App.Grbl.Gcode.MinY), (float)(Z0 + App.Grbl.Gcode.MinZ));
+            Vector3 p1work = new Vector3((float)(p0work.X + App.Grbl.Gcode.DeltaX), p0work.Y, p0work.Z);
+            Vector3 p2work = new Vector3((float)(p0work.X + App.Grbl.Gcode.DeltaX), (float)(p0work.Y + App.Grbl.Gcode.DeltaY), p0work.Z);
+            Vector3 p3work = new Vector3(p0work.X, (float)(p0work.Y + App.Grbl.Gcode.DeltaY), p0work.Z);
+            Vector3 p4work = new Vector3(p0work.X, p0work.Y, (float)(p0work.Z + App.Grbl.Gcode.DeltaZ));
+            Vector3 p5work = new Vector3((float)(p0work.X + App.Grbl.Gcode.DeltaX), p0work.Y, (float)(p0work.Z + App.Grbl.Gcode.DeltaZ));
+            Vector3 p6work = new Vector3((float)(p0work.X + App.Grbl.Gcode.DeltaX), (float)(p0work.Y + App.Grbl.Gcode.DeltaY), (float)(p0work.Z + App.Grbl.Gcode.DeltaZ));
+            Vector3 p7work = new Vector3(p0work.X, (float)(p0work.Y + App.Grbl.Gcode.DeltaY), (float)(p0work.Z + App.Grbl.Gcode.DeltaZ));
 
 
             workspace.AddLine(p0work, p1work);
@@ -324,7 +320,7 @@ namespace VhR.SimpleGrblGui.ViewModels
             LineBuilder routercut = new LineBuilder();
             LineBuilder routermove = new LineBuilder();
 
-            foreach (GcodeLine gcodeline in grbl.Gcode)
+            foreach (GcodeLine gcodeline in App.Grbl.Gcode)
             {
                 Vector3 frompoint = new Vector3((float)(X0 + gcodeline.Xfrom), (float)(Y0 + gcodeline.Yfrom), (float)(Z0 + gcodeline.Zfrom));
                 Vector3 topoint = new Vector3((float)(X0 + gcodeline.Xto), (float)(Y0 + gcodeline.Yto), (float)(Z0 + gcodeline.Zto));
@@ -336,7 +332,7 @@ namespace VhR.SimpleGrblGui.ViewModels
                     {
                         if (gcodeline.IsLinearMotion)
                         {
-                            routercut.AddLine(frompoint, topoint);
+                           routercut.AddLine(frompoint, topoint);
                         }
                         else
                         {
@@ -418,9 +414,7 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             double dX = point.X - centerpoint.X;
             double dY = point.Y - centerpoint.Y;
-
-            double angle = 0.0;
-
+            double angle;
             if (dX != 0)
             {
                 if (dX > 0) //Rigth side 270 - 90  (Q1 or Q4)?

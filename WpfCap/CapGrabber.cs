@@ -1,39 +1,75 @@
-﻿using System;
-using System.ComponentModel;
+﻿///////////////////////////////////////////////////////////////////////////////
+// CapGrabber
+//
+// This software is released into the public domain.  You are free to use it
+// in any way you like, except that you may not sell this source code.
+//
+// This software is provided "as is" with no expressed or implied warranty.
+// I accept no liability for any damage or loss of business that this software
+// may cause.
+// 
+// This source code is originally written by Tamir Khason (see http://blogs.microsoft.co.il/blogs/tamir
+// or http://www.codeplex.com/wpfcap).
+// 
+// Modifications are made by Geert van Horrik (CatenaLogic, see http://blog.catenalogic.com) 
+// 
+///////////////////////////////////////////////////////////////////////////////
+
+using System;
 using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 namespace WpfCap
 {
-    internal class CapGrabber:ISampleGrabberCB,INotifyPropertyChanged
+    internal class CapGrabber : ISampleGrabberCB, INotifyPropertyChanged
     {
+        #region Win32 imports
+        [DllImport("Kernel32.dll", EntryPoint = "RtlMoveMemory")]
+        private static extern void CopyMemory(IntPtr Destination, IntPtr Source, int Length);
+        #endregion
+
+        #region Variables
+        int _height = default(int);
+        int _width = default(int);
+        #endregion 
+
+        #region Constructor & destructor
+        public CapGrabber()
+        {
+        }
+        #endregion
+
+        #region Events
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public event EventHandler NewFrameArrived;
+        #endregion
+
+        #region Properties
         public IntPtr Map { get; set; }
-        
+
         public int Width
         {
-            get { return m_Width; }
+            get { return _width; }
             set
             {
-                m_Width = value;
+                _width = value;
                 OnPropertyChanged("Width");
             }
         }
 
         public int Height
         {
-            get { return m_Height; }
+            get { return _height; }
             set
             {
-                m_Height = value;
+                _height = value;
                 OnPropertyChanged("Height");
             }
         }
+        #endregion
 
-        int m_Height = default(int);
-
-        int m_Width = default(int);
-
-
-        #region ISampleGrabberCB Members
+        #region Methods
         public int SampleCB(double sampleTime, IntPtr sample)
         {
             return 0;
@@ -49,26 +85,21 @@ namespace WpfCap
             return 0;
         }
 
-        #endregion
-
-        [DllImport("Kernel32.dll", EntryPoint = "RtlMoveMemory")]
-        private static extern void CopyMemory(IntPtr Destination, IntPtr Source, int Length);
-
-        public event EventHandler NewFrameArrived;
         void OnNewFrameArrived()
         {
-            NewFrameArrived?.Invoke(this, null);
+            if (NewFrameArrived != null)
+            {
+                NewFrameArrived(this, null);
+            }
         }
-
-        #region INotifyPropertyChanged Members
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         void OnPropertyChanged(string name)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
+            }
         }
-
         #endregion
     }
 }

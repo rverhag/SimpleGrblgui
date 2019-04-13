@@ -8,7 +8,7 @@ namespace Vhr.Codes
         public State()
         {
             Add(GrblState.IDLE, "Ready for next action.");
-            Add(GrblState.RUN, "Machine is moving, Please be careful!");
+            Add(GrblState.RUN, "Machine is moving.");
             Add(GrblState.HOLD0, "Hold complete. Ready to resume.");
             Add(GrblState.HOLD1, "Hold in-progress. Reset will throw an alarm.");
             Add(GrblState.JOG, "Jogging, Please be careful!");

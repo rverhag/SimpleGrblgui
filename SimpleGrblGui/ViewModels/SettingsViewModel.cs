@@ -8,10 +8,10 @@ namespace VhR.SimpleGrblGui.ViewModels
     class SettingsViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        private Grbl grbl;
+        
         public SettingsViewModel()
         {
-            grbl = Grbl.Interface;
+           
             FillSettings();
         }
 
@@ -19,7 +19,7 @@ namespace VhR.SimpleGrblGui.ViewModels
         {
             Settings = new ObservableCollection<Setting>();
 
-            foreach (Setting setting in grbl.Settings.Values)
+            foreach (Setting setting in App.Grbl.Settings.Values)
             {
                 Settings.Add(setting);
             }

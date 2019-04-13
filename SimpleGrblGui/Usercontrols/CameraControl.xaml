@@ -2,23 +2,18 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:VhR.SimpleGrblGui.Usercontrols"
-             >
-    <Grid >
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto" ></RowDefinition>
-            <RowDefinition Height="*" ></RowDefinition>
-        </Grid.RowDefinitions>
+             xmlns:wpfCap="http://schemas.sharpsoft.net/xaml"
+             IsVisibleChanged="UserControl_IsVisibleChanged" Loaded="UserControl_Loaded">
 
-        <local:ColorPickerControl  x:Name="ColorCombo" 
-                                   Grid.Row="0" 
-                                   SelectedColor="Red" 
-                                   Width="100"
-                                   Height="15"
-                                   FontSize="8"
-                                   HorizontalAlignment="Right" />
-        <Grid x:Name="ImageGrid" Grid.Row="1" Unloaded="ImageGrid_Unloaded" Loaded="ImageGrid_Loaded">
-           
+    <Grid   x:Name="CameraGrid" >
+        <!--Unloaded="CameraGrid_Unloaded" 
+                Loaded="CameraGrid_Loaded">-->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Panel.ZIndex="3" >
+                <ComboBox x:Name="DeviceBox" Width="200" Height="25"  Margin="10 10 10 10"/>
+                <local:ColorPickerControl  x:Name="ColorCombo" Grid.Row="2" SelectedColor="Red" Width="100" Height="25" Margin="0 10 10 10" />
+            </StackPanel>
+            
+            <wpfCap:CapPlayer x:Name="Player" Rotation="180" SizeChanged="CapPlayer_SizeChanged" Panel.ZIndex="1"/>
         </Grid>
         
-    </Grid>
 </UserControl>

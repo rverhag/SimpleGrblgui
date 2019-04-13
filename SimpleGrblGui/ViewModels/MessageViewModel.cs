@@ -6,13 +6,12 @@ namespace VhR.SimpleGrblGui.ViewModels
 {
     public class MessageViewModel : INotifyPropertyChanged
     {
-        private Grbl grbl;
+       
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MessageViewModel()
         {
-            grbl = Grbl.Interface;
-            grbl.MessageReceived += Grbl_MessageReceived;
+            App.Grbl.MessageReceived += Grbl_MessageReceived;
         }
 
         private void Grbl_MessageReceived(object sender, MessageReceivedEventArgs e)
@@ -22,7 +21,7 @@ namespace VhR.SimpleGrblGui.ViewModels
 
         public string FeedbackMessage
         {
-            get { return grbl.FeedbackMessage; }
+            get { return App.Grbl.FeedbackMessage; }
         }
 
     }

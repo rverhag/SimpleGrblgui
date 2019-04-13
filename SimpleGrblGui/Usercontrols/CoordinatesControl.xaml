@@ -9,7 +9,6 @@
     <UserControl.Resources>
         <vhr:RadioButtonCheckedConverter x:Key="RadioButtonCheckedConverter"/>
         
-        
         <Style x:Key="RadioButton" TargetType="RadioButton">
             <Setter Property="SnapsToDevicePixels" Value="true"/>
             <Setter Property="OverridesDefaultStyle" Value="true"/>
@@ -54,11 +53,10 @@
             </Setter>
 
         </Style>
-
     </UserControl.Resources>
 
 
-    <Grid Margin="0 10 0 0" >
+    <Grid Margin="5 10 0 0"  MinWidth="200">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
@@ -479,14 +477,15 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="5*"/>
                 <RowDefinition Height="7*"/>
+                <RowDefinition Height="7*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
             <Button Grid.Column="0" 
+                    Grid.Row="2"
 					Content="Home" 
 					ToolTip="Find Machine Home"
 					FontSize="15" 
@@ -497,6 +496,7 @@
 					Background="{x:Null}"/>
 
             <Button Grid.Column="1" 
+                    Grid.Row="2"
 					Content="Work" 
 					ToolTip="Find Work Zero"
 					FontSize="15" 
@@ -506,17 +506,27 @@
                     Command="{Binding GoToWorkZero}"
 					Background="{x:Null}"/>
 
-            <Button Grid.Column="2" 
+            <Button Grid.Column="0" 
+                    Grid.Row="1"
 					Content="Spindle" 
-					ToolTip="Spindle"
+					ToolTip="Start/stop spindle"
 					FontSize="15" 
 					FontWeight="Bold" 
 					Margin="2 2 2 2"  
 					IsEnabled="{Binding SpindleButtonEnabled}"
                     Command="{Binding ToggleSpindle}"
 					Background="{x:Null}" />
-
-            
+           
+            <Button Grid.Column="1" 
+                    Grid.Row="1"
+					Content="Cooling" 
+					ToolTip="Start/stop Flood cooling"
+					FontSize="15" 
+					FontWeight="Bold" 
+					Margin="2 2 2 2"  
+					IsEnabled="{Binding CoolingButtonEnabled}"
+                    Command="{Binding ToggleCooling}"
+					Background="{x:Null}" />
 
         </Grid>
        

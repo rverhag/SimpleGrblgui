@@ -5,7 +5,7 @@
           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
           mc:Ignorable="d"
-          Title="VhR CNC" >
+          Title="VhR CNC" Loaded="Window_Loaded" >
 
     <Grid Name="Maingrid" Margin="10" >
         <Grid.RowDefinitions>
@@ -13,6 +13,7 @@
             <RowDefinition Height="*" Name="ContentRow"/>
             <RowDefinition Height="auto" Name="MessageboxRow"/>
             <RowDefinition Height="Auto" Name="StatusBarRow"/>
+           
         </Grid.RowDefinitions>
 
         <Menu Grid.Row="0" IsMainMenu="True">
@@ -29,36 +30,37 @@
                       />
         </Menu>
 
-        <Grid Grid.Row="1" Name="ContentGrid"  Background="Transparent">
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Usercontrols:GcodeControl  Grid.Column="0" 
-                                        Margin="0 0 2 0"                    
-                                        VerticalAlignment="Top"
-                                        Background="Transparent"
-                                        Panel.ZIndex="2"/>
+            <Grid Grid.Column="0" Name="ContentGrid"  Background="Transparent">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" Name="ContentRow1"/>
+                    <RowDefinition Height="Auto" Name="SplitterRow"/>
+                    <RowDefinition Height="50" Name="GcodeRow"/>
+                </Grid.RowDefinitions>
+                <Usercontrols:CameraControl x:Name="Camera" Visibility="Hidden" Grid.Row="0"/>
+                <Usercontrols:ViewportControl x:Name="Drawing" Grid.Row="0" />
+                
+                <GridSplitter Grid.Row="1" 
+                      ResizeDirection="Rows"  
+                      HorizontalAlignment="Stretch" 
+                      VerticalAlignment="Stretch"
+                      Background="Transparent" 
+                      ShowsPreview="true" 
+                      Height="2"/>
+                <Usercontrols:GcodeControl Grid.Row="2" Background="Transparent" Height="Auto"/>
 
-            <GridSplitter Grid.Column="1"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Stretch"
-              Background="Gray" 
-              ShowsPreview="True"
-              Width="1"/>
-            
-            <Usercontrols:ViewportControl  Grid.Column="2"/>
-
-            <Usercontrols:CoordinatesControl    Grid.Column="3" 
+            </Grid>
+            <Usercontrols:CoordinatesControl    Grid.Column="1" 
                                                 Margin="0 0 2 0"                    
                                                 VerticalAlignment="Top"
-                                                Background="Transparent"
-                                                Panel.ZIndex="2"/>
+                                                Background="Transparent"/>
         </Grid>
-
+        
         <Usercontrols:MessageControl Grid.Row="2"/>
         <Usercontrols:StateControl Grid.Row="3"/>
 
