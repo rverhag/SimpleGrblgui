@@ -52,11 +52,13 @@ namespace Vhr
 
         private Grbl()
         {
-            Log.Info("New Grbl-instance");
+            Log.Info("New Grbl-Singleton");
         }
 
         public void Start()
         {
+            Log.Info("Start Grbl-communication");
+
             IntializeSerialPort();
 
             pollinginterval = Convert.ToInt16(ConfigurationManager.AppSettings["PollingInterval"]);
@@ -123,6 +125,11 @@ namespace Vhr
 
         private void FinalizeSerialPort()
         {
+            //make sure there is no communication with the serail port
+            StopStatuspolling();
+            Thread.Sleep(500);
+
+            Log.Info("Close and finalize Serial port.");
             if (serialport != null && serialport.IsOpen) serialport.Close();
 
             if (serialport != null)
@@ -131,11 +138,13 @@ namespace Vhr
                 serialport.Dispose();
                 serialport = null;
             }
+
+            Log.Info("Serial port closed and disposed.");
         }
 
         private void IntializeSerialPort()
         {
-
+            Log.Info("Initializing Serial port");
             serialport = new SerialPort
             {
                 PortName = Convert.ToString(ConfigurationManager.AppSettings["ComPort"]),
@@ -161,6 +170,7 @@ namespace Vhr
                 serialport.DiscardInBuffer();
                 serialport.DiscardOutBuffer();
             }
+            Log.Info("Serial port initialized and opened");
         }
 
         private void Serialport_PinChanged(object sender, SerialPinChangedEventArgs e)
