@@ -983,7 +983,8 @@ namespace Vhr
 
         public void SetXWorkToZero()
         {
-            serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} X{1}\r", WorkCoordinates.Current.Index, MPOS.X)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L20 P{0} X{1}", WorkCoordinates.Current.Index, 0.000)).ToString());
+            //serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} X{1}\r", WorkCoordinates.Current.Index, MPOS.X)).ToString());
             GetGcodeParameters();
         }
 
@@ -991,33 +992,48 @@ namespace Vhr
         {
             double correctionx= Convert.ToDouble(ConfigurationManager.AppSettings["CorrectionX"]);
 
-            serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} X{1}", WorkCoordinates.Current.Index, MPOS.X+ correctionx)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L20 P{0} X{1}", WorkCoordinates.Current.Index, correctionx)).ToString());
+            //serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} X{1}", WorkCoordinates.Current.Index, MPOS.X + correctionx)).ToString());
             GetGcodeParameters();
         }
 
         public void SetYWorkToZero()
         {
-            serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} Y{1}", WorkCoordinates.Current.Index, MPOS.Y)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L20 P{0} Y{1}", WorkCoordinates.Current.Index, 0.000)).ToString());
+            //serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} Y{1}", WorkCoordinates.Current.Index, MPOS.Y)).ToString());
             GetGcodeParameters();
         }
 
         public void SetCorrectedYWorkToZero()
         {
             double correctiony = Convert.ToDouble(ConfigurationManager.AppSettings["CorrectionY"]);
-            serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} Y{1}", WorkCoordinates.Current.Index, MPOS.Y+ correctiony)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L20 P{0} Y{1}", WorkCoordinates.Current.Index, correctiony)).ToString());
+            //serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} Y{1}", WorkCoordinates.Current.Index, MPOS.Y+ correctiony)).ToString());
             GetGcodeParameters();
         }
 
         public void SetZWorkToZero()
         {
-            serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} Z{1}", WorkCoordinates.Current.Index, MPOS.Z)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L20 P{0} Z{1}", WorkCoordinates.Current.Index, 0.000)).ToString());
+            //serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} Z{1}", WorkCoordinates.Current.Index, MPOS.Z)).ToString());
             GetGcodeParameters();
         }
 
         public void SetCorrectedZWorkToZero()
         {
             double correctionz = Convert.ToDouble(ConfigurationManager.AppSettings["CorrectionZ"]);
-            serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} Z{1}", WorkCoordinates.Current.Index, MPOS.Z+ correctionz)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L20 P{0} Z{1}", WorkCoordinates.Current.Index, correctionz)).ToString());
+            //serialport.Write(Command.AddReturn(string.Format("G10 L2 P{0} Z{1}", WorkCoordinates.Current.Index, MPOS.Z+ correctionz)).ToString());
+            GetGcodeParameters();
+        }
+
+        public void ProbeToZWorkZero()
+        {
+            double correctionz = Convert.ToDouble(ConfigurationManager.AppSettings["CorrectionZ"]);
+            serialport.Write(Command.AddReturn(string.Format("G38.2 Z-10 F100")).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G10 L20 P{0} Z{1}", WorkCoordinates.Current.Index, correctionz)).ToString());
+            serialport.Write(Command.AddReturn(string.Format("G0 Z10")).ToString());
+
             GetGcodeParameters();
         }
 

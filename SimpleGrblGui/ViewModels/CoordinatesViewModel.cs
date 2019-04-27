@@ -73,6 +73,8 @@ namespace VhR.SimpleGrblGui.ViewModels
         public ICommand SetCorrectedYWorkToZero { get { return new DelegatingCommand(App.Grbl.SetCorrectedYWorkToZero); } }
         public ICommand SetCorrectedZWorkToZero { get { return new DelegatingCommand(App.Grbl.SetCorrectedZWorkToZero); } }
 
+        public ICommand ProbeToZWorkZero { get { return new DelegatingCommand(App.Grbl.ProbeToZWorkZero); } }
+
         public ICommand IncreaseFeed1 { get { return new DelegatingCommand(App.Grbl.IncreaseFeed1); } }
         public ICommand IncreaseFeed10 { get { return new DelegatingCommand(App.Grbl.IncreaseFeed10); } }
         public ICommand SetFeed100 { get { return new DelegatingCommand(App.Grbl.SetFeed100); } }
